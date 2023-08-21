@@ -1,0 +1,13 @@
+eureka:
+  server:
+    renewal-percent-threshold: 0.95
+  client:
+    register-with-eureka: false # De esta forma evitamos que el mismo eureka se registre a el mismo
+    fetch-registry: false # Indica que no no haga peticiones al mismo servidor   
+  instance:
+    hostname: localhost # Nombre de la instancia
+
+
+server:
+    port: 9000
+    address: 0.0.0.0
