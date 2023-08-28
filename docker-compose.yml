@@ -1,0 +1,132 @@
+version: '3.7'
+
+services:
+
+  elasticsearch:
+    extends:
+      service: elasticsearch
+      file: ./elk/docker-compose.yml
+    networks:
+      - poc-test
+    mem_limit: 1024m
+
+  logstash:
+    extends:
+      service: logstash
+      file: ./elk/docker-compose.yml
+    networks:
+      - poc-test
+    mem_limit: 1024m
+
+  kibana:
+    extends:
+      service: kibana
+      file: ./elk/docker-compose.yml       
+    networks:
+      - poc-test
+    mem_limit: 1024m
+
+  filebeat:
+    extends:
+      service: filebeat
+      file: ./elk/docker-compose.yml
+    networks:
+      - poc-test
+    mem_limit: 250m
+
+  eureka-service:
+    extends:
+      service: eureka-service
+      file: ./eureka/docker-compose.yml
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - poc-test
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://eureka-service:9000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: on-failure
+
+  config-service:
+    extends:
+      service: config-service
+      file: ./config.server/docker-compose.yml
+    networks:
+      - poc-test
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+       EUREKA_SERVER: eureka-service
+    links:
+      - eureka-service
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://config-service:9001/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: on-failure
+
+  ms_item_db:
+    extends:
+      service: ms_item_db
+      file: ./database/postgres/docker-compose.yml
+    networks:
+      - poc-test
+    restart: on-failure
+
+  api-gateway:
+    extends:
+      service: api-gateway
+      file: ./apiGateway/docker-compose.yml
+    links:
+      - eureka-service
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    networks:
+      - poc-test
+    environment:
+      EUREKA_SERVER: eureka-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://api-gateway:9002/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: on-failure
+
+  items-app:
+    extends:
+      service: items-service
+      file: ../microservices/items/docker-compose.yml
+    links:
+      - config-service
+      - ms_item_db
+      - api-gateway
+    depends_on:
+      ms_item_db:
+        condition: service_started
+      config-service:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    networks:
+      - poc-test
+    environment:
+      EUREKA_SERVER: eureka-service
+      CONFIG_SERVER: config-service
+      DB_HOST: ms_item_db
+      DB_PORT: 5432
+    restart: on-failure
+
+networks:
+  poc-test:
+    driver: "bridge"
+
+volumes:
+  db_item:
+    driver: local

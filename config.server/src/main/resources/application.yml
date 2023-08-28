@@ -6,6 +6,8 @@ spring:
           uri: https://github.com/ms-test-bv/config-server
           clone-on-start: true
           timeout: 100
+          username: jebv.informatico@gmail.com
+          password: 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
   application:
     name: test-config
 server:
@@ -19,6 +21,6 @@ management:
 eureka:
   client:
     service-url:
-      defaultZone: http://${EUREKA_SERVER:localhost}:${EUREKA_PORT:9000}/eureka/
+      defaultZone: http://${EUREKA_SERVER:eureka-service}:${EUREKA_PORT:9000}/eureka/
   instance:
     preferIpAddress: true

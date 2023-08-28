@@ -1,0 +1,32 @@
+  fixedValue(event: Event): void {
+    if ((event.target as HTMLInputElement).value.substr(0, 6) != '000220') {
+      this.f?.code.setValue(
+        '000220' + (event.target as HTMLInputElement).value.substr(7, 10)
+      );
+    }
+  }
+  
+    fixedValue(event: Event): void {
+    if ((event.target as HTMLInputElement).value.substr(0, 6) != '000999') {
+      this.codeFormControl?.setValue(
+        '000999' + (event.target as HTMLInputElement).value.substr(7, 10)
+      );
+    }
+  }
+  
+    fixedValue(event: Event) {
+    if ((event.target as HTMLInputElement).value.substr(0, 2) != '17') {
+      this.codeFormControl?.setValue('17');
+    }
+    const aux = this.codeFormControl?.value as string;
+    if (this.isEreaseActivate) {
+      this.isEreaseActivate = false;
+      (event.target as HTMLInputElement).value = aux.slice(0, aux.length - 2);
+      this.codeFormControl?.setValue(aux.slice(0, aux.length - 2));
+    }
+    if (aux.length === 8 && (event.target as HTMLInputElement).value != null) {
+      this.codeFormControl?.setValue(
+        `${this.codeFormControl?.value as string}00`
+      );
+    }
+  }

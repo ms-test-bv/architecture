@@ -1,8 +1,10 @@
 management:
   endpoints:
+    gateway: # NEW
+      enabled: true # NEW
     web:
       exposure:
-        include: refresh
+        include: "*"
 server:
   port: 9002
   address: 0.0.0.0
